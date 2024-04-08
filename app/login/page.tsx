@@ -1,119 +1,103 @@
+"use client"
+import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { submitForm } from "./actions";
+import toast, { Toaster } from 'react-hot-toast';
 import Link from "next/link";
-import { headers } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-import { SubmitButton } from "./submit-button";
 
-export default function Login({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
-  const signIn = async (formData: FormData) => {
-    "use server";
+type LoginInFormData = {
+    email: string;
+    password: string;
+};
 
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+const useLogin = () => {
+    const methods = useForm<LoginInFormData>({
+        shouldUseNativeValidation: true,
     });
 
-    if (error) {
-      return redirect("/login?message=Could not authenticate user");
+    const onSubmit = async (formData: LoginInFormData) => {
+        try {
+            const res = await submitForm(formData)
+            if (res?.message) {
+                throw new Error(res?.message)
+            }
+        } catch (error) {
+            toast.error(`${error}`, { className: "capitalize tracking-widest text-xs" })
+        }
     }
 
-    return redirect("/protected");
-  };
+    return {
+        methods,
+        handleSubmit: methods.handleSubmit(onSubmit),
+    };
+};
 
-  const signUp = async (formData: FormData) => {
-    "use server";
+const LoginForm = () => {
 
-    const origin = headers().get("origin");
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const supabase = createClient();
+    const { register, formState: { errors }, } = useFormContext<LoginInFormData>();
+    return (
+        <div className="flex flex-col items-center justify-center h-screen max-h-full px-4 py-3">
+            <div className="card gap-4">
+                <div className="card-title">
+                    <h3 className="text-5xl tracking-widest uppercase font-bold mx-auto flex-none">Login</h3>
+                </div>
+                <p className="flex-none text-sm tracking-wider">Please enter your email and password to access the application.</p>
+                <div className="w-full">
+                    <label htmlFor="email" className='join w-full'>
+                        <div className="join-item btn btn-disabled btn-accent">
+                            <i className="fi fi-br-at"></i>
+                        </div>
+                        <input
+                            placeholder="Email"
+                            type="email"
+                            autoComplete="off"
+                            className="input input-bordered join-item w-full"
+                            {...register("email", {
+                                required: "Email is required", pattern: {
+                                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                                    message: `This is not a valid email address`
+                                }
+                            })}
+                        />
+                    </label>
+                    {errors?.email && <p className="text-xs text-warning mt-1 "><i className="fi fi-sr-info mr-1"></i>{errors.email?.message}</p>}
+                </div>
+                <div className="w-full">
+                    <label htmlFor="password" className='join w-full'>
+                        <div className="join-item btn btn-disabled btn-accent">
+                            <i className="fi fi-rr-lock"></i>
+                        </div>
+                        <input
+                            placeholder="Password"
+                            type="password"
+                            autoComplete="off"
+                            className="input input-bordered join-item w-full"
+                            {...register("password", { required: "Password is required" })}
+                        />
+                    </label>
+                    {errors?.password && <p className="text-xs text-warning mt-1"><i className="fi fi-sr-info mr-1"></i>{errors.password?.message}</p>}
+                </div>
+                <input type="submit" className="btn btm-nav-sm btn-outline btn-accent uppercase tracking-widest text-accent-content" />
+                <p className='text-sm text-right '>You don't have an account?<Link href={`/signup`} className=' ml-2 btn-link'>Sign Up here!</Link></p>
+            </div>
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
-    });
+        </div>
+    );
+};
 
-    if (error) {
-      return redirect("/login?message=Could not authenticate user");
-    }
+const LoginDetails = () => {
+    const { methods, handleSubmit } = useLogin();
 
-    return redirect("/login?message=Check email to continue sign in process");
-  };
+    return (
+        <FormProvider {...methods}>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
+            <form noValidate onSubmit={handleSubmit}>
+                <LoginForm />
+            </form>
+        </FormProvider>
+    );
+};
 
-  return (
-    <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
-      <Link
-        href="/"
-        className="absolute left-8 top-8 py-2 px-4 rounded-md no-underline text-foreground bg-btn-background hover:bg-btn-background-hover flex items-center group text-sm"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>{" "}
-        Back
-      </Link>
-
-      <form className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
-        <label className="text-md" htmlFor="email">
-          Email
-        </label>
-        <input
-          className="rounded-md px-4 py-2 bg-inherit border mb-6"
-          name="email"
-          placeholder="you@example.com"
-          required
-        />
-        <label className="text-md" htmlFor="password">
-          Password
-        </label>
-        <input
-          className="rounded-md px-4 py-2 bg-inherit border mb-6"
-          type="password"
-          name="password"
-          placeholder="••••••••"
-          required
-        />
-        <SubmitButton
-          formAction={signIn}
-          className="bg-green-700 rounded-md px-4 py-2 text-foreground mb-2"
-          pendingText="Signing In..."
-        >
-          Sign In
-        </SubmitButton>
-        <SubmitButton
-          formAction={signUp}
-          className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2"
-          pendingText="Signing Up..."
-        >
-          Sign Up
-        </SubmitButton>
-        {searchParams?.message && (
-          <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
-            {searchParams.message}
-          </p>
-        )}
-      </form>
-    </div>
-  );
-}
+export default LoginDetails;
