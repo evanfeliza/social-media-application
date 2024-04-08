@@ -16,12 +16,6 @@ export async function GET(
     );
   const origin =
     requestUrl.origin;
-  const {
-    data: {
-      user
-    }
-  } =
-    await supabase.auth.getUser();
 
   if (
     code
@@ -30,17 +24,10 @@ export async function GET(
       code
     );
   }
-
-  if (
-    user
-  ) {
-    return NextResponse.redirect(
-      `${origin}/${user.id}`
-    );
-  }
+  await supabase.auth.signOut();
 
   // URL to redirect to after sign up process completes
   return NextResponse.redirect(
-    `${origin}/login`
+    `${origin}`
   );
 }
