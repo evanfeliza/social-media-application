@@ -1,6 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+
 
 type LoginInFormData =
   {
@@ -8,41 +8,34 @@ type LoginInFormData =
     password: string;
   };
 
-export const submitForm =
-  async (
-    formData: LoginInFormData
-  ) => {
+export const submitSignInForm =
+  async (params: {
+    formData: LoginInFormData;
+  }) => {
     const supabase =
       createClient();
-    const {
-      error:
-        authError
-    } =
+    const res =
       await supabase.auth.signInWithPassword(
         {
           email:
-            formData?.email,
+            params
+              .formData
+              ?.email,
           password:
-            formData?.password
+            params
+              .formData
+              ?.password
         }
       );
-    const {
-      data,
-      error:
-        userError
-    } =
-      await supabase.auth.getUser();
 
-    if (
-      authError ||
-      userError
-    ) {
-      return (
-        authError ||
-        userError
-      );
-    }
-    return redirect(
-      `/${data?.user?.id}`
-    );
+    return {
+      data: res
+        ?.data
+        .user
+        ?.id,
+      error:
+        res
+          ?.error
+          ?.message
+    };
   };

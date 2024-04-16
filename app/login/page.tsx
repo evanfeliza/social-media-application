@@ -1,8 +1,9 @@
 "use client"
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
-import { submitForm } from "./actions";
-import toast, { Toaster } from 'react-hot-toast';
+import { submitSignInForm } from "./actions";
+import { toast, Toaster } from 'sonner';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type LoginInFormData = {
     email: string;
@@ -10,18 +11,17 @@ type LoginInFormData = {
 };
 
 const useLogin = () => {
+    const router = useRouter()
     const methods = useForm<LoginInFormData>({
         shouldUseNativeValidation: true,
     });
 
     const onSubmit = async (formData: LoginInFormData) => {
-        try {
-            const res = await submitForm(formData)
-            if (res?.message) {
-                throw new Error(res?.message)
-            }
-        } catch (error) {
-            toast.error(`${error}`, { className: "capitalize tracking-widest text-xs" })
+        const { error, data } = await submitSignInForm({ formData })
+        if (data) {
+            router.push(`/${data}`)
+        } else if (error) {
+            toast.error(`${error}. Please try again.`, { className: "capitalize tracking-widest text-xs" })
         }
     }
 
@@ -32,8 +32,9 @@ const useLogin = () => {
 };
 
 const LoginForm = () => {
-
     const { register, formState: { errors }, } = useFormContext<LoginInFormData>();
+
+
     return (
         <div className="flex flex-col items-center justify-center h-screen max-h-full px-4 py-3">
             <div className="card gap-4">
@@ -83,15 +84,14 @@ const LoginForm = () => {
         </div>
     );
 };
-
 const LoginDetails = () => {
     const { methods, handleSubmit } = useLogin();
 
     return (
         <FormProvider {...methods}>
             <Toaster
-                position="top-right"
-                reverseOrder={true}
+                position="top-center"
+                richColors
             />
             <form noValidate onSubmit={handleSubmit}>
                 <LoginForm />
