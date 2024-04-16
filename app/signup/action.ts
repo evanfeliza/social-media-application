@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
+
 type SignUpFormData =
   {
     email: string;
@@ -7,16 +8,13 @@ type SignUpFormData =
     displayName: string;
   };
 
-export const submitSignupForm =
+export const submitSignUpForm =
   async (
     formData: SignUpFormData
   ) => {
     const supabase =
       createClient();
-    const {
-      data,
-      error
-    } =
+    const res =
       await supabase.auth.signUp(
         {
           email:
@@ -26,20 +24,21 @@ export const submitSignupForm =
           options:
             {
               data: {
-                displayName:
+                display_name:
                   formData?.displayName
               }
             }
         }
       );
 
-    if (
-      error
-    ) {
-      return error.message;
-    }
-
-    return data
-      ?.user
-      ?.email;
+    return {
+      data: res
+        .data
+        .user
+        ?.id,
+      error:
+        res
+          .error
+          ?.message
+    };
   };

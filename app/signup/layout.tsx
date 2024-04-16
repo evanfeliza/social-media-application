@@ -1,7 +1,7 @@
 import DarkModeToggle from '@/components/libs/dark-mode-toggle'
 import React from 'react'
 
-const SignUpLayout = ({
+const SignUpLayout = async ({
     children,
 }: {
     children: React.ReactNode

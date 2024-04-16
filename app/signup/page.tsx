@@ -2,13 +2,13 @@
 import React from 'react'
 import Link from 'next/link';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
-import { submitSignupForm } from './actions';
+import { toast, Toaster } from 'sonner';
+import { submitSignUpForm } from './action';
 
 type SignUpFormData = {
     email: string;
     password: string;
-    displayName: string;
+    displayName: string
 };
 
 
@@ -18,18 +18,13 @@ const useSignUp = () => {
     });
 
     const onSubmit = async (formData: SignUpFormData) => {
-        try {
-            const res = await submitSignupForm(formData)
-            if (res) {
-                toast.success(`You have Successfully signed up!`, { className: "capitalize tracking-widest text-xs" })
-                methods.reset()
-            } else {
-                throw new Error(res as string)
-            }
-        } catch (error) {
+        const { data, error } = await submitSignUpForm(formData)
+        if (data) {
+            toast.success(`You have Successfully signed up!`, { className: "capitalize tracking-widest text-xs" })
+            methods.reset()
+        } else if (error) {
             toast.error(`${error}`, { className: "capitalize tracking-widest text-xs" })
         }
-
     }
 
     return {
@@ -110,8 +105,8 @@ const SignUpDetails = () => {
     return (
         <FormProvider {...methods}>
             <Toaster
-                position="top-right"
-                reverseOrder={true}
+                position="top-center"
+                richColors
             />
             <form noValidate onSubmit={handleSubmit}>
                 <SignUpForm />
