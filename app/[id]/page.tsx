@@ -1,6 +1,9 @@
 "use client"
 import AddPostButtonForm from "@/components/libs/add-post";
+import ManagePost from "@/components/libs/manage-post";
+import EditPostButtonForm from "@/components/libs/manage-post";
 import ProfileHandle from "@/components/libs/profile-handle";
+import PostProvider from "@/components/providers/post-provider";
 import QueryProvider from "@/components/providers/query-provider";
 import { createClient } from "@/utils/supabase/client";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +11,17 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
+
+type Posts = {
+	id: string;
+	created_at: string;
+	email: string;
+	display_name: string;
+	post: string;
+	postImageUrl: string;
+	is_liked_user_id: string[]
+	user_id: string;
+}
 
 const supabase = createClient()
 
@@ -71,7 +85,6 @@ const getPostsFromAuthAndFollowedUsers = async ({ pageParam, userId, followedUse
 }
 
 
-
 const getUserEngagement = async (postId: string) => {
 	const { data: existing } = await supabase
 		.from('posts')
@@ -94,7 +107,7 @@ const UserEngagement = ({ post }: {
 	}
 }) => {
 	const queryClient = useQueryClient()
-	const { data: likedPostByUser, isFetching } = useQuery({ queryKey: ['engagement'], queryFn: () => getUserEngagement(post.id) })
+	const { data: likedPostByUser } = useQuery({ queryKey: ['engagement'], queryFn: () => getUserEngagement(post.id) })
 	const [isLiked, setIsLiked] = useState<boolean>(post.likesByUsers?.includes(post.isLikeByUserId))
 
 	const mutationLikePost = useMutation({
@@ -167,10 +180,9 @@ const UserEngagement = ({ post }: {
 		</div>
 	)
 }
-const PostList = () => {
-	const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-	const listRef = useRef<HTMLUListElement>(null);
-	const { data: userData, } = useQuery({ queryKey: ['profileInfo'], queryFn: getProfileInfo })
+
+const usePostList = () => {
+	const { data: userData } = useQuery({ queryKey: ['profileInfo'], queryFn: getProfileInfo })
 	const { data: followerId, } = useQuery({
 		queryKey: ['followingId'], queryFn: () => getFollowerId(userData?.id as string),
 		enabled: !!userData
@@ -194,6 +206,19 @@ const PostList = () => {
 		initialPageParam: 0,
 		enabled: !!followerId && !!userData?.id
 	});
+	return {
+		userData,
+		postsData,
+		fetchNextPage, hasNextPage,
+		isFetching,
+	}
+}
+
+const PostList = () => {
+	const { userData, postsData, fetchNextPage, hasNextPage, isFetching } = usePostList()
+	const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+	const listRef = useRef<HTMLUListElement>(null);
+
 
 	const handleIntersection = (entries: IntersectionObserverEntry[]) => {
 		if (entries[0].isIntersecting && hasNextPage && !isFetching && !isLoadingMore) {
@@ -218,33 +243,37 @@ const PostList = () => {
 		};
 	}, []);
 
-	const posts = postsData?.pages.flatMap(page => page);
-	const sortedPosts = posts?.sort((a, b) => {
-		const dateA = new Date(a.created_at); // Convert string to Date object
-		const dateB = new Date(b.created_at); // Convert string to Date object
-		return dateB.getTime() - dateA.getTime(); // Compare timestamps
+
+	const posts = postsData?.pages?.flatMap(page => page).map(post => {
+		const { "0": user, postId: id, ...rest } = post;
+		return { ...user, id, ...rest };
 	});
 
-
-
+	const sortedPosts = posts?.sort((a, b) => {
+		const dateA = new Date(a.created_at);
+		const dateB = new Date(b.created_at);
+		return dateB.getTime() - dateA.getTime();
+	});
 
 	return <>
 		<ul ref={listRef} className="grid gap-3 grid-auto-col w-full max-w-full">
-			{!isFetching && sortedPosts?.map(post =>
-				post ? <li key={post.id} className="card  bg-base-100 shadow-m mx-auto w-full max-w-full">
-					<div className="flex justify-between items-center p-2">
-						<ProfileHandle email={post[0]?.email as string} displayName={post[0]?.display_name} />
-						<div className="flex flex-col justify-end items-end">
-							<button className="btn btn-xs btn-circle btn-ghost"><i className="fi fi-br-menu-dots-vertical"></i></button>
-							<span className=" block text-xs font-light mt-1">{moment(post?.created_at).fromNow()}</span>
+			{!isFetching && sortedPosts?.map((post: Posts) =>
+				sortedPosts ? <PostProvider post={post}>
+					<li key={post.id} className="card  bg-base-100 shadow-m mx-auto w-full max-w-full">
+						<div className="flex justify-between items-center p-2">
+							<ProfileHandle email={post?.email} displayName={post?.display_name} />
+							<div className="flex flex-col justify-end items-end">
+								{userData?.id === post.user_id && <ManagePost />}
+								<span className=" block text-xs font-light mt-1">{moment(post?.created_at).fromNow()}</span>
+							</div>
 						</div>
-					</div>
-					<div className="card-body !px-4 !py-2 max-w-full break-all">
-						<p>{post.post}</p>
-					</div>
-					{/* <figure><img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" /></figure> */}
-					<UserEngagement post={{ id: post.id, isLikeByUserId: userData?.id as string, likesByUsers: post?.is_liked_user_id }} />
-				</li> : null
+						<div className="card-body !px-4 !py-2 max-w-full break-all">
+							<p>{post.post}</p>
+						</div>
+						{/* <figure><img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" /></figure> */}
+						<UserEngagement post={{ id: post.id, isLikeByUserId: userData?.id as string, likesByUsers: post?.is_liked_user_id }} />
+					</li>
+				</PostProvider> : null
 			)}
 			{isFetching ? <span className=" mx-auto loading loading-dots loading-lg text-secondary"></span> : isLoadingMore ? <span className=" mx-auto loading loading-dots loading-lg text-secondary"></span> : null}
 		</ul>

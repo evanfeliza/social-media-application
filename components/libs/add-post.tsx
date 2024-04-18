@@ -87,28 +87,8 @@ const useAddPostModal = () => {
                     </label>
 
                     <div className="modal-action col-span-12 ">
-                        <button type="submit" className={`btn btn-block ${postValue?.length === 0 && 'btn-disabled'} btn-success btn-sm tracking-widest font-light`}>Post</button>
+                        <button type="submit" className={`btn btn-block ${postValue?.length === 0 && 'btn-disabled'} btn-success btn-sm tracking-widest font-light`}>{mutation.isPending ? <span className="loading loading-spinner loading-sm text-primary"></span> : "Post"}</button>
                     </div>
-                    {/* <div className="grid grid-cols-12 gap-2">
-                            <div className='col-span-12 mx-auto'>
-                                <Avatar email={email} />
-                            </div>
-                        
-                            <label className="form-control w-full col-span-6">
-                                <div className="label">
-                                    <span className="label-text">Email</span>
-                                </div>
-                                <EditEmailButton />
-                            </label>
-                            <div className="modal-action justify-end col-span-12">
-                                <button onClick={(e) => {
-                                    e.preventDefault();
-                                    reset()
-                                    updateUserProfileModalRef?.current?.close()
-                                }} className="btn btn-error btn-sm btn-outline tracking-widest font-light w-1/4">Cancel</button>
-                                <button type="submit" className="btn btn-success btn-sm tracking-widest font-light w-1/4">{mutation.isPending ? <span className="loading loading-spinner loading-sm text-primary"></span> : "Save"}</button>
-                            </div>
-                        </div> */}
                 </form>
             </Modal >
         ,
