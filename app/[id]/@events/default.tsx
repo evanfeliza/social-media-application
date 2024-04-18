@@ -33,15 +33,14 @@ const getUsers = async (userId: string): Promise<UserProfiles[]> => {
     }))
 }
 
-const getFollowings = async () => {
+const getFollowings = async (userId: string) => {
     const { data: followings } = await supabase
         .from('followings')
         .select('following_user_id')
-
+        .eq('user_id', userId)
 
     return followings
 }
-
 
 const UserFollowCard = ({ user }: {
     user: {
@@ -69,7 +68,6 @@ const UserFollowCard = ({ user }: {
                 .from('followings')
                 .delete()
                 .eq("following_user_id", user.id)
-
         }
     })
 
@@ -97,7 +95,6 @@ const UserFollowCard = ({ user }: {
         })
     }
 
-
     return <li key={user.id} className='p-2 bg-base-100 rounded-lg w-full'>
         <div className="avatar flex">
             <div className="w-10 rounded-full mr-2">
@@ -120,7 +117,7 @@ const UsersList = () => {
     const params = useParams()
 
     const { data: users, isFetching: isUsersFetching } = useQuery({ queryKey: ['users'], queryFn: () => getUsers(params?.id as string) })
-    const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfiles'], queryFn: getFollowings })
+    const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfiles'], queryFn: () => getFollowings(params?.id as string) })
 
     const buildUserProfiles = (users: UserProfiles[], followings: { following_user_id: string }[]) => {
         if (!isFollowingProfileFetching) {

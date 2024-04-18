@@ -1,7 +1,6 @@
 "use client"
 import AddPostButtonForm from "@/components/libs/add-post";
 import ManagePost from "@/components/libs/manage-post";
-import EditPostButtonForm from "@/components/libs/manage-post";
 import ProfileHandle from "@/components/libs/profile-handle";
 import PostProvider from "@/components/providers/post-provider";
 import QueryProvider from "@/components/providers/query-provider";
@@ -49,39 +48,47 @@ const getFollowerId = async (userId: string) => {
 
 
 const getPostsFromAuthAndFollowedUsers = async ({ pageParam, userId, followedUserIds }: { pageParam: number; userId: string; followedUserIds?: string[] }) => {
-	const { data: postsUsers, } = await supabase
+	const { data: userPosts, } = await supabase
 		.from('posts')
 		.select('*')
 		.range(pageParam * 5, (pageParam + 1) * 5 - 1)
 		.eq('user_id', userId)
 		.order('created_at', { ascending: false });
 
-	const { data: postsFollowedUsers } = await supabase
+	const { data: userProfile } = await supabase.from('profiles').select('display_name,email').eq('id', userId)
+
+	const { data: followedUsersPosts } = await supabase
 		.from('posts')
 		.select('*')
 		.range(pageParam * 5, (pageParam + 1) * 5 - 1)
 		.in('user_id', followedUserIds || [])
 		.order('created_at', { ascending: false });
 
-	const { data: followedUsersProfiles } = await supabase.from('profiles').select('display_name,email').in('id', followedUserIds || [])
-	const { data: userProfiles } = await supabase.from('profiles').select('display_name,email').eq('id', userId)
+	const { data: followedUsersProfiles } = await supabase.from('profiles').select('id,display_name,email').range(pageParam * 5, (pageParam + 1) * 5 - 1).in('id', followedUserIds || []).order('created_at', { ascending: false });
+
+	const userPostsList = userPosts?.flatMap(usersPost =>
+		userProfile?.map(profile => ({ ...usersPost, ...profile }))
+	).map(userPost => {
+		const { "0": user, postId: id, ...rest } = userPost;
+		return ({ id, ...rest });
+	}) ?? [];
 
 
-	if (postsUsers && postsFollowedUsers) {
-		const allPosts = [
-			...postsUsers.map(postUser => ({
-				...postUser,
-				...(userProfiles || {})
-			})),
-			...postsFollowedUsers.map(postFollowedUser => ({
-				...postFollowedUser,
-				...(followedUsersProfiles || {})
-			}))
-		]
+	const followedUsersProfilesList = followedUsersProfiles?.map(followedUsersProfile => ({ ...followedUsersProfile }))
 
+	const followedUsersPostsLists = followedUsersPosts?.map(followedUserPost => {
+		const matchedProfile = followedUsersProfilesList?.find(profile => profile.id === followedUserPost.user_id);
+		if (matchedProfile) {
+			const { email, display_name } = matchedProfile;
+			return {
+				...followedUserPost,
+				email: email,
+				display_name: display_name
+			};
+		}
+	})
 
-		return allPosts
-	}
+	return [...userPostsList, followedUsersPostsLists]
 }
 
 
@@ -243,11 +250,7 @@ const PostList = () => {
 		};
 	}, []);
 
-
-	const posts = postsData?.pages?.flatMap(page => page).map(post => {
-		const { "0": user, postId: id, ...rest } = post;
-		return { ...user, id, ...rest };
-	});
+	const posts = postsData?.pages?.flatMap(page => page).flat()
 
 	const sortedPosts = posts?.sort((a, b) => {
 		const dateA = new Date(a.created_at);
@@ -255,11 +258,12 @@ const PostList = () => {
 		return dateB.getTime() - dateA.getTime();
 	});
 
+
 	return <>
 		<ul ref={listRef} className="grid gap-3 grid-auto-col w-full max-w-full">
 			{!isFetching && sortedPosts?.map((post: Posts) =>
-				sortedPosts ? <PostProvider post={post}>
-					<li key={post.id} className="card  bg-base-100 shadow-m mx-auto w-full max-w-full">
+				sortedPosts ? <PostProvider post={post} key={post.id} >
+					<li className="card  bg-base-100 shadow-m mx-auto w-full max-w-full">
 						<div className="flex justify-between items-center p-2">
 							<ProfileHandle email={post?.email} displayName={post?.display_name} />
 							<div className="flex flex-col justify-end items-end">
