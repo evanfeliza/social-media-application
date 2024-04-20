@@ -8,6 +8,8 @@ import { createClient } from '@/utils/supabase/client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useParams } from 'next/navigation'
+import EmojiPicker from 'emoji-picker-react'
+import dynamic from 'next/dynamic'
 
 
 type PostFormData = {
@@ -15,6 +17,13 @@ type PostFormData = {
     post: string;
     postImageUrl: string;
 }
+
+const Picker = dynamic(
+    () => {
+        return import('emoji-picker-react');
+    },
+    { ssr: false }
+);
 
 const getProfileInfo = async () => {
     const supabase = createClient()
@@ -34,10 +43,11 @@ const useAddPostModal = () => {
     const queryClient = useQueryClient()
     const supabase = createClient()
     const { data } = useAddPostForm()
-    const { register, reset, formState: { errors }, handleSubmit, watch, control } = useFormContext<PostFormData>()
+    const { register, reset, formState: { errors }, handleSubmit, watch, control, setValue } = useFormContext<PostFormData>()
     const addPostModalRef = useRef<HTMLDialogElement>(null)
     const [previewImagePost, setPreviewImagePost] = useState<string | null>(null);
     const [postImageFile, setPostImageFile] = useState<File | null>()
+    const [isPickEmoji, setIsPickEmoji] = useState<boolean>(false)
     const postValue = watch('post')
 
 
@@ -59,8 +69,7 @@ const useAddPostModal = () => {
                 if (postImageUrl) {
                     const { data: signedPostImageUrl } = await supabase.storage
                         .from('image-post')
-                        .createSignedUrl(filename, 3600)
-
+                        .createSignedUrl(filename, 631152000)
                     return await supabase
                         .from('posts')
                         .insert([
@@ -106,7 +115,6 @@ const useAddPostModal = () => {
     const postImageUrl = watch('postImageUrl')
     const handlePreviewImagePost = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        console.log(file)
         const reader = new FileReader();
 
 
@@ -129,25 +137,48 @@ const useAddPostModal = () => {
             <Modal onBackdropClick={() => {
                 addPostModalRef?.current?.close()
                 setPreviewImagePost(null)
+                setIsPickEmoji(false)
                 reset()
 
             }} ref={addPostModalRef}
-                modalBoxClassName="!max-w-[40rem]"
+                modalBoxClassName="!max-w-[40rem] h-3/4"
             >
                 <div className='mb-5'>
                     <h1 className="text-md tracking-wider font-medium text-center">Add a Post</h1>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmitAddPost)}>
-                    <label className="form-control w-full col-span-12">
+                    <label className="form-control w-full col-span-12 relative">
                         <div className="label sr-only">
                             <span className="label-text">Post</span>
                         </div>
                         <textarea
-                            className="textarea textarea-bordered textarea-sm resize-none"
+                            className="textarea textarea-bordered textarea-sm w-full resize-none"
                             {...register("post")}
                             placeholder={`Share your moments here! ${data?.user_metadata.display_name}`}
-                        ></textarea>
+                        >
+                        </textarea>
+                        <button className='btn btn-sm btn-circle btn-ghost absolute bottom-5 right-2' onClick={(e) => {
+                            e.preventDefault()
+                            setIsPickEmoji(prevState => !prevState)
+                        }}>
+                            <i className="fi fi-rr-smile"></i>
+                        </button>
+
+                        <div className='absolute top-11 right-6 z-30'>
+                            <EmojiPicker
+                                open={isPickEmoji}
+                                onEmojiClick={(emojiData) => {
+                                    setValue('post', postValue + emojiData?.emoji)
+                                    setIsPickEmoji(false)
+                                }}
+                                lazyLoadEmojis
+                            />
+                        </div>
+
+
+
+
                         {errors?.post && <span className="text-red-500"></span>}
                     </label>
                     <label className="form-control w-full col-span-12 mt-2">
@@ -185,7 +216,7 @@ const useAddPostModal = () => {
                                     setPreviewImagePost(null)
                                     reset({ postImageUrl: "" })
                                 }}>
-                                    <i className="fi fi-rr-cross-small "></i>
+                                    <i className="fi fi-rr-cross-small mt-[0.15rem] "></i>
                                 </button>
                             </div>
                         )}
@@ -232,7 +263,7 @@ const AddPostForm = () => {
 
     const postValue = watch("post")
 
-    return <div className="px-3 py-2 w-full join gap-2 bg-base-300 rounded-box">
+    return <div className="px-3 py-2 w-full join gap-2 bg-base-100/50 drop-shadow-md rounded-box">
         {addPostModal}
         <div className="avatar join-item">
             {isFetched ? (<div className='rounded-full w-14'>
@@ -241,10 +272,10 @@ const AddPostForm = () => {
             </div>}
         </div>
         <button onClick={openAddPostModal} className='join-item w-full'>
-            <div className='btn btn-sm !justify-start input-bordered input-sm w-full ' >
-                <span className='text-content text-xs font-light'>
+            <div className='btn btn-sm btn-ghost !justify-start input-bordered input-sm w-full ' >
+                <div className='text-content text-xs font-light'>
                     {postValue?.length > 0 ? postValue : <>Share your moments here! <span className="capitalize">{data?.user_metadata.display_name}</span></>}
-                </span>
+                </div>
             </div>
         </button>
     </div>
