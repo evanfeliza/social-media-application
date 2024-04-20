@@ -135,7 +135,7 @@ const UsersList = () => {
 
 
     return <ul className="max-h-full w-full grid gap-2 grid-flow-row">
-        {!isUsersFetching ? (userProfiles?.map(user => <UserFollowCard key={user.id} user={{ id: user.id, email: user.email, displayName: user.display_name, isFollowing: user.isFollowing }} />)) : <span className="mx-auto loading loading-dots loading-lg text-secondary"></span>}
+        {!isUsersFetching ? (userProfiles?.map(user => <UserFollowCard key={user.id} user={{ id: user.id, email: user.email, displayName: user.display_name, isFollowing: user.isFollowing }} />)) : <span className="mx-auto loading loading-dots loading-lg text-primary"></span>}
     </ul>
 }
 
@@ -144,7 +144,7 @@ const EventSection = () => {
     return (
         <QueryProvider>
             <Toaster position="bottom-right" richColors />
-            <div className="h-full bg-base-300 p-2 rounded-box">
+            <div className="h-full bg-base-10 px-2">
                 <UsersList />
             </div>
         </QueryProvider>

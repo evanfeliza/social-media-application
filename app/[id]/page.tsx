@@ -285,7 +285,7 @@ const PostList = () => {
 					</li>
 				</PostProvider> : null
 			)}
-			{isFetching ? <span className=" mx-auto loading loading-dots loading-lg text-secondary"></span> : isLoadingMore ? <span className=" mx-auto loading loading-dots loading-lg text-secondary"></span> : null}
+			{isFetching ? <span className=" mx-auto loading loading-dots loading-lg text-primary"></span> : isLoadingMore ? <span className=" mx-auto loading loading-dots loading-lg text-secondary"></span> : null}
 		</ul>
 	</>
 }
@@ -296,7 +296,7 @@ export default function NewsFeedPage() {
 
 	return (<QueryProvider>
 		<Toaster position="bottom-right" richColors />
-		<div className="h-full w-full max-w-full rounded-box px-6 py-4 bg-base-200 space-y-4">
+		<div className="h-full w-full max-w-full px-6 py-4 bg-base-200/25 space-y-4">
 			<AddPostButtonForm />
 			<PostList />
 		</div>

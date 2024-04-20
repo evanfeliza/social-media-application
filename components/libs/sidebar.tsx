@@ -32,7 +32,7 @@ const SidebarProfileSkeleton = () => {
 const SidebarControls = () => {
     const { data, isFetching } = useQuery({ queryKey: ['profileInfo'], queryFn: getUser })
 
-    return <div className="h-full drawer drawer-open menu bg-base-300 rounded-box " >
+    return <div className="h-full drawer drawer-open menu bg-base-100 rounded-box " >
         <ul className="menu-md max-h-full w-full">
             {!isFetching ? <>
                 <li>

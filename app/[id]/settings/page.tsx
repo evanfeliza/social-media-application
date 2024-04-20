@@ -7,13 +7,23 @@ import Avatar from "@/components/libs/avatar"
 import QueryProvider from "@/components/providers/query-provider"
 
 
-
+const supabase = createClient()
 const getProfileInfo = async () => {
-    const supabase = createClient()
+
     const { data: { user } } = await supabase.auth.getUser()
 
 
     return user
+}
+
+const getUserRelationships = async ({ id }: { id: string }) => {
+    const { data: postCount } = await supabase.from('post')
+        .select('user_id')
+        .eq('user_id', id)
+
+    return {
+        postCount
+    }
 }
 
 const LoadingProfileSettings = () => {

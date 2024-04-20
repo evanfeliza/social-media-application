@@ -14,7 +14,7 @@ const DashboardLayout = async ({
     return (
         <div className="h-screen container mx-auto">
             <Navbar />
-            <div className='h-full grid grid-cols-12 p-[0.5rem] gap-2'>
+            <div className='h-full grid grid-cols-12 px-[0.5rem] gap-2'>
                 <div className='h-full col-span-3'>
                     {controls}
                 </div>
