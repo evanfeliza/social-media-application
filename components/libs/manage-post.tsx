@@ -14,7 +14,7 @@ type PostFormData = {
     email: string;
     display_name: string;
     post: string;
-    postImageUrl: string;
+    image_post: string;
     is_liked_user_id: string[]
 }
 
@@ -91,20 +91,39 @@ const useEditPostModal = () => {
 const useDeletePostModal = () => {
     const queryClient = useQueryClient()
     const supabase = createClient()
-    const { reset, handleSubmit } = useFormContext<PostFormData>()
+    const { reset, getValues } = useFormContext<PostFormData>()
     const deletePostModalRef = useRef<HTMLDialogElement>(null)
+    const postId = getValues('id')
+    const postPath = getValues('image_post')
 
     const mutationDeletePost = useMutation({
-        mutationFn: async (formData: PostFormData) => {
-            return await supabase
-                .from('posts')
-                .delete()
-                .eq('id', formData.id)
+        mutationFn: async ({ id, postImageUrl }: { id: string; postImageUrl: string }) => {
+            const filenameWithQueryString = postImageUrl.substring(postImageUrl.lastIndexOf('/') + 1);
+            const path = filenameWithQueryString.split('?')[0];
+            const filename = decodeURIComponent(path);
+
+            if (postImageUrl) {
+                await supabase
+                    .storage
+                    .from('image-post')
+                    .remove([filename])
+
+                return await supabase
+                    .from('posts')
+                    .delete()
+                    .eq('id', id);
+
+            } else {
+                return await supabase
+                    .from('posts')
+                    .delete()
+                    .eq('id', id);
+            }
         },
     })
 
-    const onSubmitDeletePost = (formData: PostFormData) => {
-        mutationDeletePost.mutate(formData, {
+    const onSubmitDeletePost = ({ id, postImageUrl }: { id: string; postImageUrl: string }) => {
+        mutationDeletePost.mutate({ id, postImageUrl }, {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['posts'] })
                 toast.success(`Post Deleted`, { className: "capitalize tracking-widest text-xs" })
@@ -116,6 +135,7 @@ const useDeletePostModal = () => {
                 toast.error(`${context.message}`, { className: "capitalize tracking-widest text-xs" })
             }
         })
+
 
     };
 
@@ -130,7 +150,7 @@ const useDeletePostModal = () => {
                         reset()
                         deletePostModalRef?.current?.close()
                     }} className="btn btn-outline btn-xs w-1/4 btn-error tracking-widest font-light">No</button>
-                    <button type="submit" onClick={handleSubmit(onSubmitDeletePost)} className="btn btn-outline btn-xs w-1/4 btn-success tracking-widest font-light">Yes</button>
+                    <button onClick={() => onSubmitDeletePost({ id: postId, postImageUrl: postPath })} className="btn btn-outline btn-xs w-1/4 btn-success tracking-widest font-light">Yes</button>
                 </div>
             </Modal >
         ,
@@ -151,11 +171,11 @@ const useEditPostForm = () => {
         if (post) {
             methods.reset({
                 id: post?.id,
-                post: post?.post
+                post: post?.post,
+                image_post: post?.image_post
             })
         }
     }, [methods, post])
-
     return {
         methods,
     }

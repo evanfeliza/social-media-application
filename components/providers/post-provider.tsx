@@ -6,7 +6,7 @@ type PostFormData = {
     email: string;
     display_name: string;
     post: string;
-    postImageUrl: string;
+    image_post: string;
     is_liked_user_id: string[]
 }
 

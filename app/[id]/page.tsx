@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
+import Image from "next/image";
 
 type Posts = {
 	id: string;
@@ -17,7 +18,7 @@ type Posts = {
 	email: string;
 	display_name: string;
 	post: string;
-	postImageUrl: string;
+	image_post: string;
 	is_liked_user_id: string[]
 	user_id: string;
 }
@@ -258,12 +259,11 @@ const PostList = () => {
 		return dateB.getTime() - dateA.getTime();
 	});
 
-
 	return <>
 		<ul ref={listRef} className="grid gap-3 grid-auto-col w-full max-w-full">
 			{!isFetching && sortedPosts?.map((post: Posts) =>
 				sortedPosts ? <PostProvider post={post} key={post.id} >
-					<li className="card  bg-base-100 shadow-m mx-auto w-full max-w-full">
+					<li className="card  bg-base-100 shadow-md mx-auto w-full max-w-full">
 						<div className="flex justify-between items-center p-2">
 							<ProfileHandle email={post?.email} displayName={post?.display_name} />
 							<div className="flex flex-col justify-end items-end">
@@ -274,7 +274,13 @@ const PostList = () => {
 						<div className="card-body !px-4 !py-2 max-w-full break-all">
 							<p>{post.post}</p>
 						</div>
-						{/* <figure><img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" /></figure> */}
+						{post.image_post && <figure>
+							<Image
+								src={post?.image_post}
+								alt="Image Post"
+								width={500}
+								height={500}
+							/></figure>}
 						<UserEngagement post={{ id: post.id, isLikeByUserId: userData?.id as string, likesByUsers: post?.is_liked_user_id }} />
 					</li>
 				</PostProvider> : null
