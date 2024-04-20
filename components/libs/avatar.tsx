@@ -2,9 +2,9 @@ import Image from 'next/image';
 
 
 
-const Avatar = ({ email }: { email: string }) => {
+const Avatar = ({ email }: { email?: string }) => {
 
-    const handleEmail = ({ email }: { email: string }) => {
+    const handleEmail = ({ email }: { email?: string }) => {
         if (email === undefined) {
             return "unknown"
         } else {
@@ -21,6 +21,7 @@ const Avatar = ({ email }: { email: string }) => {
             width={100}
             height={100}
             alt={`${seed}`}
+            priority
         /></>
 }
 
