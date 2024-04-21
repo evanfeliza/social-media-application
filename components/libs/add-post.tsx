@@ -1,5 +1,5 @@
 "use client"
-import React, { ChangeEvent, memo, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Avatar from './avatar'
 import { Modal } from './modal'
@@ -31,12 +31,6 @@ const getProfileInfo = async () => {
 
     return user
 }
-
-
-const getPostImageFole = (e: React.ChangeEvent<HTMLInputElement>): File | undefined => {
-    const file = e.target.files?.[0];
-    return file;
-};
 
 const useAddPostModal = () => {
     const params = useParams()
@@ -263,7 +257,7 @@ const AddPostForm = () => {
 
     const postValue = watch("post")
 
-    return <div className="px-3 py-2 w-full join gap-2 bg-base-100/50 drop-shadow-md rounded-box">
+    return <div className="px-3 py-2 w-full join gap-2 bg-base-100 drop-shadow-sm rounded-box">
         {addPostModal}
         <div className="avatar join-item">
             {isFetched ? (<div className='rounded-full w-14'>

@@ -5,12 +5,20 @@ import ProfileHandle from './profile-handle'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 
-const getUser = async () => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    return user
-}
+const supabase = createClient()
+
+const getUser =
+    async () => {
+        const {
+            data: {
+                user
+            }
+        } =
+            await supabase.auth.getUser();
+
+        return user;
+    };
 
 
 const SidebarProfileSkeleton = () => {
@@ -32,7 +40,7 @@ const SidebarProfileSkeleton = () => {
 const SidebarControls = () => {
     const { data, isFetching } = useQuery({ queryKey: ['profileInfo'], queryFn: getUser })
 
-    return <div className="h-full drawer drawer-open menu bg-base-100 rounded-box " >
+    return <div className="h-full drawer drawer-open menu bg-base-100 rounded-box mt-1 " >
         <ul className="menu-md max-h-full w-full">
             {!isFetching ? <>
                 <li>
@@ -64,7 +72,7 @@ const SidebarControls = () => {
 
         <Link href={`/${data?.id}/bug-report`} className='mt-auto btn btn-block btn-ghost btn-xs'>
             <i className="fi fi-rs-bug"></i>
-            <span className='not-italic '>Report a Bug</span>
+            <span className='not-italic'>Report a Bug</span>
         </Link>
     </div >
 }
