@@ -95,19 +95,23 @@ const UsersList = () => {
 
 
 
-    const buildUserProfiles = (users: UserProfiles[], followings: { user_id: string }[]) => {
+    const buildUserProfiles = (users: UserProfiles[], followings: string[]) => {
         if (!isFollowingProfileFetching) {
-            const followingIds = new Set(followings.map(following => following?.user_id))
-            return users?.map(user => ({
-                ...user,
-                isFollowing: followingIds.has(user.id)
-            }))
+            const followingIds = new Set(followings?.map(following => following))
+            return users?.map(user => {
+
+                return ({
+                    ...user,
+                    isFollowing: followingIds?.has(user.id)
+                })
+            })
         }
     }
 
     const userProfiles = useMemo(() => {
         return buildUserProfiles(users as [], followingProfiles as []);
     }, [isUsersFetching, isFollowingProfileFetching])
+
 
 
     return <ul className="max-h-full w-full grid gap-2 grid-flow-row">
