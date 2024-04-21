@@ -67,28 +67,26 @@ const useUserRelationshipInformation = () => {
 const UserRelationshipInformation = () => {
     const { userRelationship } = useUserRelationshipInformation()
 
-    return <div className="grid grid-cols-12 gap-2 mt-4 ">
-        <div className="card card-compact col-span-4 rounded-lg bg-base-100 drop-shadow-sm">
+    return <ul className="grid grid-cols-12 rounded-lg mt-4 bg-base-200/30">
+        <li className="col-span-4">
             <div className="flex px-6 py-3 gap-2 items-center justify-between h-full">
                 <div className="my-auto"><i className="fi fi-rr-thumbtack"></i></div>
                 <div className="w-full">
                     <p className="text-md tracking-wide font-bold">Post</p>
                     <p className="text-xs font-bold">{userRelationship?.postCount?.length ?? "0"}</p>
                 </div>
-
             </div>
-        </div>
-        <div className="card card-compact col-span-4 rounded-lg bg-base-100 drop-shadow-sm">
+        </li>
+        <li className="col-span-4">
             <div className="flex px-6 py-3 gap-2 items-center justify-between h-full">
                 <div className="my-auto"><i className="fi fi-rr-followcollection"></i></div>
                 <div className="w-full">
                     <p className="text-md tracking-wide font-bold">Followers</p>
                     <p className="text-xs font-bold">{userRelationship?.followersCount?.length ?? "0"}</p>
                 </div>
-
             </div>
-        </div>
-        <div className="card card-compact col-span-4 rounded-lg bg-base-100 drop-shadow-sm">
+        </li>
+        <li className="col-span-4">
             <div className="flex px-6 py-3 gap-2 items-center justify-between h-full">
                 <div className="my-auto"><i className="fi fi-rr-following"></i></div>
                 <div className="w-full">
@@ -97,9 +95,9 @@ const UserRelationshipInformation = () => {
                 </div>
 
             </div>
-        </div>
+        </li>
 
-    </div>
+    </ul>
 }
 
 
