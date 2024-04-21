@@ -11,6 +11,7 @@ import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import Image from "next/image";
+import { getPostsFromAuthAndFollowedUsers } from "../api/posts/actions";
 
 type Posts = {
 	id: string;
@@ -25,72 +26,34 @@ type Posts = {
 
 const supabase = createClient()
 
-const getProfileInfo = async () => {
-	const { data: { user } } = await supabase.auth.getUser()
+const getUser = async () => {
+	const {
+		data: {
+			user
+		}
+	} =
+		await supabase.auth.getUser();
+	return user;
+};
 
-	return user
-}
 
 const getFollowerId = async (userId: string) => {
 	try {
 		const { data: followedUsers, error: followedUsersError } = await supabase
 			.from('followings')
-			.select('following_user_id')
-			.eq('user_id', userId);
+			.select('user_id')
+			.eq('following_user_id', userId);
 
 		if (followedUsersError) {
 			throw new Error(followedUsersError.message);
 		}
-		return followedUsers.map(user => user.following_user_id);
+		return followedUsers.map(user => user.user_id);
 	} catch (error) {
 		throw error
 	}
 }
 
 
-const getPostsFromAuthAndFollowedUsers = async ({ pageParam, userId, followedUserIds }: { pageParam: number; userId: string; followedUserIds?: string[] }) => {
-	const { data: userPosts, } = await supabase
-		.from('posts')
-		.select('*')
-		.range(pageParam * 5, (pageParam + 1) * 5 - 1)
-		.eq('user_id', userId)
-		.order('created_at', { ascending: false });
-
-	const { data: userProfile } = await supabase.from('profiles').select('display_name,email').eq('id', userId)
-
-	const { data: followedUsersPosts } = await supabase
-		.from('posts')
-		.select('*')
-		.range(pageParam * 5, (pageParam + 1) * 5 - 1)
-		.in('user_id', followedUserIds || [])
-		.order('created_at', { ascending: false });
-
-	const { data: followedUsersProfiles } = await supabase.from('profiles').select('id,display_name,email').range(pageParam * 5, (pageParam + 1) * 5 - 1).in('id', followedUserIds || []).order('created_at', { ascending: false });
-
-	const userPostsList = userPosts?.flatMap(usersPost =>
-		userProfile?.map(profile => ({ ...usersPost, ...profile }))
-	).map(userPost => {
-		const { "0": user, postId: id, ...rest } = userPost;
-		return ({ id, ...rest });
-	}) ?? [];
-
-
-	const followedUsersProfilesList = followedUsersProfiles?.map(followedUsersProfile => ({ ...followedUsersProfile }))
-
-	const followedUsersPostsLists = followedUsersPosts?.map(followedUserPost => {
-		const matchedProfile = followedUsersProfilesList?.find(profile => profile.id === followedUserPost.user_id);
-		if (matchedProfile) {
-			const { email, display_name } = matchedProfile;
-			return {
-				...followedUserPost,
-				email: email,
-				display_name: display_name
-			};
-		}
-	})
-
-	return [...userPostsList, followedUsersPostsLists]
-}
 
 
 const getUserEngagement = async (postId: string) => {
@@ -183,19 +146,18 @@ const UserEngagement = ({ post }: {
 			<label className="btn btn-circle btn-sm swap swap-rotate">
 				<input type="checkbox" onChange={handleLikePost} defaultChecked={isLiked} />
 				<i className="fi fi-rs-heart swap-off mt-1"></i>
-				<i className="fi fi-ss-heart swap-on mt-1"></i>
+				<i className="fi fi-ss-heart swap-on mt-1 text-secondary"></i>
 			</label>
 		</div>
 	)
 }
 
 const usePostList = () => {
-	const { data: userData } = useQuery({ queryKey: ['profileInfo'], queryFn: getProfileInfo })
+	const { data: userData } = useQuery({ queryKey: ['profileInfo'], queryFn: getUser })
 	const { data: followerId, } = useQuery({
 		queryKey: ['followingId'], queryFn: () => getFollowerId(userData?.id as string),
 		enabled: !!userData
 	})
-
 
 	const {
 		data: postsData,
@@ -263,7 +225,7 @@ const PostList = () => {
 		<ul ref={listRef} className="grid gap-3 grid-auto-col w-full max-w-full">
 			{!isFetching && sortedPosts?.map((post: Posts) =>
 				sortedPosts ? <PostProvider post={post} key={post.id} >
-					<li className="card  bg-base-100 shadow-md mx-auto w-full max-w-full">
+					<li className="card  bg-base-100 shadow-sm mx-auto w-full max-w-full">
 						<div className="flex justify-between items-center p-2">
 							<ProfileHandle email={post?.email} displayName={post?.display_name} />
 							<div className="flex flex-col justify-end items-end">

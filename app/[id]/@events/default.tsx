@@ -1,4 +1,5 @@
 "use client"
+import { getFollowings, getUsers } from '@/app/api/users/action'
 import Avatar from '@/components/libs/avatar'
 import QueryProvider from '@/components/providers/query-provider'
 import { createClient } from '@/utils/supabase/client'
@@ -16,32 +17,6 @@ type UserProfiles = {
     display_name: string;
 }
 
-
-const getUsers = async (userId: string): Promise<UserProfiles[]> => {
-    const { data: profiles } = await supabase
-        .from('profiles')
-        .select()
-        .neq('id', userId)
-    if (!profiles) {
-        throw Error('No profiles found')
-    }
-
-    return profiles.map(profile => ({
-        id: profile.id,
-        email: profile.email,
-        display_name: profile.display_name
-    }))
-}
-
-const getFollowings = async (userId: string) => {
-    const { data: followings } = await supabase
-        .from('followings')
-        .select('following_user_id')
-        .eq('user_id', userId)
-
-    return followings
-}
-
 const UserFollowCard = ({ user }: {
     user: {
         id: string;
@@ -56,7 +31,7 @@ const UserFollowCard = ({ user }: {
             return await supabase
                 .from('followings')
                 .insert([
-                    { following_user_id: user.id },
+                    { user_id: user.id },
                 ])
                 .select()
         }
@@ -67,7 +42,7 @@ const UserFollowCard = ({ user }: {
             return await supabase
                 .from('followings')
                 .delete()
-                .eq("following_user_id", user.id)
+                .eq("user_id", user.id)
         }
     })
 
@@ -95,7 +70,7 @@ const UserFollowCard = ({ user }: {
         })
     }
 
-    return <li key={user.id} className='p-2 bg-base-100 rounded-lg w-full'>
+    return <li key={user.id} className='px-4 py-2 bg-base-200/30 rounded-lg w-full'>
         <div className="avatar flex">
             <div className="w-10 rounded-full mr-2">
                 <Avatar email={user.email} />
@@ -115,13 +90,14 @@ const UserFollowCard = ({ user }: {
 
 const UsersList = () => {
     const params = useParams()
-
     const { data: users, isFetching: isUsersFetching } = useQuery({ queryKey: ['users'], queryFn: () => getUsers(params?.id as string) })
     const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfiles'], queryFn: () => getFollowings(params?.id as string) })
 
-    const buildUserProfiles = (users: UserProfiles[], followings: { following_user_id: string }[]) => {
+
+
+    const buildUserProfiles = (users: UserProfiles[], followings: { user_id: string }[]) => {
         if (!isFollowingProfileFetching) {
-            const followingIds = new Set(followings.map(f => f.following_user_id))
+            const followingIds = new Set(followings.map(following => following?.user_id))
             return users?.map(user => ({
                 ...user,
                 isFollowing: followingIds.has(user.id)
@@ -144,7 +120,7 @@ const EventSection = () => {
     return (
         <QueryProvider>
             <Toaster position="bottom-right" richColors />
-            <div className="h-full bg-base-10 px-2">
+            <div className="h-full bg-base-10 px-2 mt-1">
                 <UsersList />
             </div>
         </QueryProvider>
