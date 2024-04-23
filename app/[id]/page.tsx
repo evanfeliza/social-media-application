@@ -240,8 +240,9 @@ const PostList = () => {
 							<Image
 								src={post?.image_post}
 								alt="Image Post"
-								width={500}
-								height={500}
+								width={1080}
+								height={920}
+								priority
 							/></figure>}
 						<UserEngagement post={{ id: post.id, isLikeByUserId: userData?.id as string, likesByUsers: post?.is_liked_user_id }} />
 					</li>
