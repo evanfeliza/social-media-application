@@ -1,5 +1,5 @@
 "use client"
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Avatar from './avatar'
 import { Modal } from './modal'
@@ -24,6 +24,8 @@ const Picker = dynamic(
     },
     { ssr: false }
 );
+
+const MemoizedEmojiPicker = React.memo(EmojiPicker)
 
 const getProfileInfo = async () => {
     const supabase = createClient()
@@ -158,21 +160,15 @@ const useAddPostModal = () => {
                         }}>
                             <i className="fi fi-rr-smile"></i>
                         </button>
-
                         <div className='absolute top-11 right-6 z-30'>
-                            <EmojiPicker
+                            <MemoizedEmojiPicker
                                 open={isPickEmoji}
                                 onEmojiClick={(emojiData) => {
                                     setValue('post', postValue + emojiData?.emoji)
-                                    setIsPickEmoji(false)
                                 }}
                                 lazyLoadEmojis
                             />
                         </div>
-
-
-
-
                         {errors?.post && <span className="text-red-500"></span>}
                     </label>
                     <label className="form-control w-full col-span-12 mt-2">

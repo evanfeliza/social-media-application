@@ -1,11 +1,13 @@
 "use client"
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Modal } from './modal'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { createClient } from '@/utils/supabase/client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PostContext } from '../providers/post-provider'
+import EmojiPicker from 'emoji-picker-react'
+import dynamic from 'next/dynamic'
 
 
 type PostFormData = {
@@ -18,13 +20,22 @@ type PostFormData = {
     is_liked_user_id: string[]
 }
 
+const Picker = dynamic(
+    () => {
+        return import('emoji-picker-react');
+    },
+    { ssr: false }
+);
+
+const MemoizedEmojiPicker = React.memo(EmojiPicker)
 
 
 
 const useEditPostModal = () => {
     const queryClient = useQueryClient()
     const supabase = createClient()
-    const { register, reset, formState: { errors }, handleSubmit, watch } = useFormContext<PostFormData>()
+    const { register, reset, formState: { errors }, handleSubmit, watch, setValue } = useFormContext<PostFormData>()
+    const [isPickEmoji, setIsPickEmoji] = useState<boolean>(false)
     const editPostModalRef = useRef<HTMLDialogElement>(null)
     const postValue = watch('post')
 
@@ -59,20 +70,37 @@ const useEditPostModal = () => {
         modal:
             <Modal onBackdropClick={() => {
                 editPostModalRef?.current?.close()
+                setIsPickEmoji(false)
                 reset()
             }} ref={editPostModalRef}
+                modalBoxClassName="!max-w-[40rem] h-3/4"
             >
                 <div className='mb-5'>
                     <h1 className="text-md tracking-wider font-medium text-center">Your Post</h1>
                 </div>
                 <form onSubmit={handleSubmit(onSubmitUpdatePost)}>
-                    <label className="form-control w-full col-span-12">
+                    <label className="form-control w-full col-span-12 relative">
                         <div className="label sr-only">
                             <span className="label-text">Post</span>
                         </div>
                         <textarea className="textarea textarea-bordered textarea-sm resize-none"
                             {...register('post', { required: true })}
                         ></textarea>
+                        <button className='btn btn-sm btn-circle btn-ghost absolute bottom-5 right-2' onClick={(e) => {
+                            e.preventDefault()
+                            setIsPickEmoji(prevState => !prevState)
+                        }}>
+                            <i className="fi fi-rr-smile"></i>
+                        </button>
+                        <div className='absolute top-11 right-6 z-30'>
+                            <MemoizedEmojiPicker
+                                open={isPickEmoji}
+                                onEmojiClick={(emojiData) => {
+                                    setValue('post', postValue + emojiData?.emoji)
+                                }}
+                                lazyLoadEmojis
+                            />
+                        </div>
                         {errors?.post && <span className="text-red-500"></span>}
                     </label>
 
@@ -165,6 +193,7 @@ const useDeletePostModal = () => {
 
 const useEditPostForm = () => {
     const methods = useForm<PostFormData>()
+
     const post = useContext(PostContext)
 
     useEffect(() => {
