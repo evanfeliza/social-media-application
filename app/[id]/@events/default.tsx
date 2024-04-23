@@ -4,9 +4,8 @@ import Avatar from '@/components/libs/avatar'
 import QueryProvider from '@/components/providers/query-provider'
 import { createClient } from '@/utils/supabase/client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Params } from 'next/dist/shared/lib/router/utils/route-matcher'
-import { useParams, usePathname } from 'next/navigation'
-import React, { useEffect, useMemo } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import React, { useMemo } from 'react'
 import { toast, Toaster } from 'sonner'
 
 const supabase = createClient()
@@ -25,6 +24,8 @@ const UserFollowCard = ({ user }: {
         isFollowing: boolean;
     }
 }) => {
+    const router = useRouter()
+    const params = useParams()
     const queryClient = useQueryClient()
     const mutationFollowUser = useMutation({
         mutationFn: async (user: { id: string }) => {
@@ -70,12 +71,16 @@ const UserFollowCard = ({ user }: {
         })
     }
 
+
     return <li key={user.id} className='px-4 py-2 bg-base-200/30 rounded-lg w-full'>
-        <div className="avatar flex">
+        <div role="button" onClick={() => {
+            router.replace(`/${params?.id}/${user?.displayName}`)
+            router.refresh()
+        }} className="avatar flex group">
             <div className="w-10 rounded-full mr-2">
                 <Avatar email={user.email} />
             </div>
-            <p className="my-auto font-semibold text-md break-all ">{user.displayName}</p>
+            <p className="my-auto font-semibold text-md break-all group-hover:underline group-hover:underline-offset-4 group-hover:text-accent duration-100">{user.displayName}</p>
 
         </div>
 
@@ -88,10 +93,11 @@ const UserFollowCard = ({ user }: {
     </li>
 }
 
+
 const UsersList = () => {
     const params = useParams()
-    const { data: users, isFetching: isUsersFetching } = useQuery({ queryKey: ['users'], queryFn: () => getUsers(params?.id as string) })
-    const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfiles'], queryFn: () => getFollowings(params?.id as string) })
+    const { data: users } = useQuery({ queryKey: ['users'], queryFn: () => getUsers(params?.id as string) })
+    const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfiles'], queryFn: () => getFollowings(params?.id as string), refetchOnMount: true })
 
 
 
@@ -102,7 +108,7 @@ const UsersList = () => {
 
                 return ({
                     ...user,
-                    isFollowing: followingIds?.has(user.id)
+                    isFollowing: followingIds?.has(user?.id)
                 })
             })
         }
@@ -110,23 +116,23 @@ const UsersList = () => {
 
     const userProfiles = useMemo(() => {
         return buildUserProfiles(users as [], followingProfiles as []);
-    }, [isUsersFetching, isFollowingProfileFetching])
+    }, [followingProfiles])
 
 
 
-    return <ul className="max-h-full w-full grid gap-2 grid-flow-row">
-        {!isUsersFetching ? (userProfiles?.map(user => <UserFollowCard key={user.id} user={{ id: user.id, email: user.email, displayName: user.display_name, isFollowing: user.isFollowing }} />)) : <span className="mx-auto loading loading-dots loading-lg text-primary"></span>}
+    return <ul className="max-h-full w-full grid gap-4 grid-flow-row">
+        {(userProfiles?.map(user => <UserFollowCard key={user.id} user={{ id: user.id, email: user.email, displayName: user.display_name, isFollowing: user.isFollowing }} />))}
     </ul>
 }
+
+
 
 
 const EventSection = () => {
     return (
         <QueryProvider>
             <Toaster position="bottom-right" richColors />
-            <div className="h-full bg-base-10 px-2 mt-1">
-                <UsersList />
-            </div>
+            <UsersList />
         </QueryProvider>
     )
 }
