@@ -5,7 +5,6 @@ const DynamicAvatar = dynamic(() => import(`./avatar`), { ssr: false })
 
 const ProfileHandle = ({ email, displayName }: { email: string, displayName: string }) => {
     return (
-
         <>
             <div className="avatar flex-1">
                 <div className="w-10 rounded-full mr-2">
@@ -15,7 +14,6 @@ const ProfileHandle = ({ email, displayName }: { email: string, displayName: str
             </div>
 
         </>
-
     )
 }
 
