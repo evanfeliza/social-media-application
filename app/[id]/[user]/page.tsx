@@ -36,10 +36,10 @@ const getUserRelationships = async (id?: string) => {
         .eq('user_id', id)
     const { data: followersCount } = await supabase.from('followers')
         .select('id')
-        .eq('id', id)
+        .eq('user_id', id)
     const { data: followingCount } = await supabase.from('followings')
         .select('id')
-        .eq('user_id', id)
+        .eq('following_user_id', id)
 
     return {
         postCount,

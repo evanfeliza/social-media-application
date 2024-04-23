@@ -31,10 +31,10 @@ const getUserRelationships = async (id?: string) => {
         .eq('user_id', id)
     const { data: followersCount } = await supabase.from('followers')
         .select('id')
-        .eq('id', id)
+        .eq('user_id', id)
     const { data: followingCount } = await supabase.from('followings')
         .select('id')
-        .eq('user_id', id)
+        .eq('following_user_id', id)
 
     return {
         postCount,
@@ -104,7 +104,7 @@ const UserRelationshipInformation = () => {
 
 
 const useProfileInfo = ({ params }: { params: { id: string; user: string } }) => {
-    const { data, isSuccess, isFetching } = useQuery({ queryKey: ['profile'], queryFn: () => getUserProfile({ params }), })
+    const { data, isSuccess, isFetching } = useQuery({ queryKey: ['profileInfo'], queryFn: () => getUserProfile({ params }), })
 
     return {
         data,
