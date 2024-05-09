@@ -121,7 +121,7 @@ const UserProfile = () => {
     const queryClient = useQueryClient()
     const params = useParams<{ id: string; user: string }>()
     const { data: profile, isFetching: isProfileFetching } = useQuery({ queryKey: ['user'], queryFn: () => getUserProfile({ params }) })
-    const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfile'], queryFn: () => getFollowing(profile?.id as string), enabled: !!profile })
+    const { data: followingProfiles, isFetching: isFollowingProfileFetching } = useQuery({ queryKey: ['followingProfiles'], queryFn: () => getFollowing(profile?.id as string), enabled: !!profile })
 
 
     const userProfiles = useMemo(() => {

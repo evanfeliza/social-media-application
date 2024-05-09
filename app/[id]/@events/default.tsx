@@ -74,8 +74,8 @@ const UserFollowCard = ({ user }: {
 
     return <li key={user.id} className='px-4 py-2 bg-base-200/30 rounded-lg w-full'>
         <div role="button" onClick={() => {
+            queryClient.invalidateQueries({ queryKey: ['followingProfiles'] })
             router.replace(`/${params?.id}/${user?.displayName}`)
-            router.refresh()
         }} className="avatar flex group">
             <div className="w-10 rounded-full mr-2">
                 <Avatar email={user.email} />
