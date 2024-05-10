@@ -27,6 +27,7 @@ export async function GET(
   await supabase.auth.signOut();
 
   // URL to redirect to after sign up process completes
+  
   return NextResponse.redirect(
     `${origin}`
   );

@@ -1,5 +1,5 @@
 "use client"
-import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Avatar from './avatar'
 import { Modal } from './modal'
@@ -253,7 +253,7 @@ const AddPostForm = () => {
 
     const postValue = watch("post")
 
-    return <div className="px-3 py-2 w-full join gap-2 bg-base-100 drop-shadow-sm rounded-box">
+    return <div className="px-6 py-8 w-full join gap-2 bg-base-100">
         {addPostModal}
         <div className="avatar join-item">
             {isFetched ? (<div className='rounded-full w-14'>

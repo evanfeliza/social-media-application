@@ -8,7 +8,7 @@ const EventsLayout
     }) => {
 
         return (
-            <div className="h-full bg-base-100 p-2">
+            <div className="h-full">
                 {children}
             </div>
         )

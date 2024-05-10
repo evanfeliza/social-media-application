@@ -40,8 +40,8 @@ const SidebarProfileSkeleton = () => {
 const SidebarControls = () => {
     const { data, isFetching } = useQuery({ queryKey: ['profileInfo'], queryFn: getUser })
 
-    return <div className="h-full drawer drawer-open menu bg-base-100 rounded-box mt-1 " >
-        <ul className="menu-md max-h-full w-full">
+    return <div className="h-full drawer drawer-open menu bg-base-100 px-6 py-4">
+        <ul className="menu-md max-h-full w-full space-y-5">
             {!isFetching ? <>
                 <li>
                     <Link href={`/${data?.id}/settings`}>
@@ -52,28 +52,29 @@ const SidebarControls = () => {
             <li>
                 <Link href={`/${data?.id}`}>
                     <i className=
-                        "fi fi-rr-rss mt-1"></i>
+                        "fi fi-rr-rss mt-1 text-2xl"></i>
                     <span >Feed</span>
                 </Link>
             </li>
             <li>
                 <Link href={`/${data?.id}/liked-posts`}>
-                    <i className="fi fi-rr-heart mt-1"></i>
+                    <i className="fi fi-rr-heart mt-1 text-2xl"></i>
                     <span >Liked Posts</span>
                 </Link>
             </li>
             <li className='w-full'>
                 <Link href="/auth/logout">
-                    <i className="fi fi-rr-power mt-1"></i>
+                    <i className="fi fi-rr-power mt-1 text-2xl"></i>
                     <span className='not-italic '>Signout</span>
                 </Link>
             </li>
+            <li className='w-full'>
+                <Link href={`/${data?.id}/bug-report`} className=''>
+                    <i className="fi fi-rs-bug mt-1 text-2xl"></i>
+                    <span className='not-italic'>Report a Bug</span>
+                </Link>
+            </li>
         </ul>
-
-        <Link href={`/${data?.id}/bug-report`} className='mt-auto btn btn-block btn-ghost btn-xs'>
-            <i className="fi fi-rs-bug"></i>
-            <span className='not-italic'>Report a Bug</span>
-        </Link>
     </div >
 }
 

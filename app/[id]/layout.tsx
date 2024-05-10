@@ -14,11 +14,11 @@ const DashboardLayout = async ({
     return (
         <div className="h-screen container mx-auto">
             <Navbar />
-            <div className='h-full grid grid-cols-12 px-[0.5rem] gap-2'>
-                <div className='h-full col-span-3'>
+            <div className='min-h-full grid grid-cols-12 border-y'>
+                <div className='max-h-full col-span-3 '>
                     {controls}
                 </div>
-                <div className='h-full col-span-6'>
+                <div className='h-full col-span-6 border-x'>
                     {children}
                 </div>
                 <div className='h-full col-span-3'>

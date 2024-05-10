@@ -142,7 +142,7 @@ const UserEngagement = ({ post }: {
 	}
 
 	return (
-		<div className="flex justify-between items-center join p-2">
+		<div className="flex justify-between items-center join px-6 py-4">
 			<label className="btn btn-circle btn-sm swap swap-rotate">
 				<input type="checkbox" onChange={handleLikePost} defaultChecked={isLiked} />
 				<i className="fi fi-rs-heart swap-off mt-1"></i>
@@ -222,18 +222,18 @@ const PostList = () => {
 	});
 
 	return <>
-		<ul ref={listRef} className="grid gap-3 grid-auto-col w-full max-w-full">
+		<ul ref={listRef} className="grid grid-auto-col w-full max-w-full">
 			{!isFetching && sortedPosts?.map((post: Posts) =>
 				sortedPosts ? <PostProvider post={post} key={post.id} >
-					<li className="card  bg-base-100 shadow-sm mx-auto w-full max-w-full">
-						<div className="flex justify-between items-center p-2">
+					<li className="border-y border-inherit bg-base-100  w-full max-w-full">
+						<div className="flex justify-between items-center px-6 py-4">
 							<ProfileHandle email={post?.email} displayName={post?.display_name} />
 							<div className="flex flex-col justify-end items-end">
 								{userData?.id === post.user_id && <ManagePost />}
 								<span className=" block text-xs font-light mt-1">{moment(post?.created_at).fromNow()}</span>
 							</div>
 						</div>
-						<div className="card-body !px-4 !py-2 max-w-full break-all">
+						<div className="card-body !px-6 !py-4 max-w-full break-all">
 							<p>{post.post}</p>
 						</div>
 						{post.image_post && <figure>
@@ -259,7 +259,7 @@ export default function NewsFeedPage() {
 
 	return (<QueryProvider>
 		<Toaster position="bottom-right" richColors />
-		<div className="h-full w-full max-w-full px-6 py-4 bg-base-200/25 space-y-4">
+		<div className="h-full w-full max-w-full bg-base-200/25">
 			<AddPostButtonForm />
 			<PostList />
 		</div>

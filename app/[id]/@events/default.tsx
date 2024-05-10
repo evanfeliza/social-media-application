@@ -72,7 +72,7 @@ const UserFollowCard = ({ user }: {
     }
 
 
-    return <li key={user.id} className='px-4 py-2 bg-base-200/30 rounded-lg w-full'>
+    return <li key={user.id} className='px-6 py-4 border rounded-lg'>
         <div role="button" onClick={() => {
             queryClient.invalidateQueries({ queryKey: ['followingProfiles'] })
             router.replace(`/${params?.id}/${user?.displayName}`)
@@ -120,7 +120,7 @@ const UsersList = () => {
 
 
 
-    return <ul className="max-h-full w-full grid gap-4 grid-flow-row">
+    return <ul className="max-h-full w-full grid grid-flow-row px-6 py-4 gap-4">
         {(userProfiles?.map(user => <UserFollowCard key={user.id} user={{ id: user.id, email: user.email, displayName: user.display_name, isFollowing: user.isFollowing }} />))}
     </ul>
 }

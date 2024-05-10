@@ -80,7 +80,6 @@ const LoginForm = () => {
                 <input type="submit" className="btn btm-nav-sm btn-outline btn-accent uppercase tracking-widest text-accent-content" />
                 <p className='text-sm text-right '>You don't have an account?<Link href={`/signup`} className=' ml-2 btn-link'>Sign Up here!</Link></p>
             </div>
-
         </div>
     );
 };
