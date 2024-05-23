@@ -126,11 +126,10 @@ const useDeletePostModal = () => {
 
     const mutationDeletePost = useMutation({
         mutationFn: async ({ id, postImageUrl }: { id: string; postImageUrl: string }) => {
-            const filenameWithQueryString = postImageUrl.substring(postImageUrl.lastIndexOf('/') + 1);
-            const path = filenameWithQueryString.split('?')[0];
-            const filename = decodeURIComponent(path);
-
             if (postImageUrl) {
+                const filenameWithQueryString = postImageUrl?.substring(postImageUrl.lastIndexOf('/') + 1);
+                const path = filenameWithQueryString.split('?')[0];
+                const filename = decodeURIComponent(path);
                 await supabase
                     .storage
                     .from('image-post')
@@ -142,7 +141,7 @@ const useDeletePostModal = () => {
                     .eq('id', id);
 
             } else {
-                return await supabase
+                await supabase
                     .from('posts')
                     .delete()
                     .eq('id', id);
